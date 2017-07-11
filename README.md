@@ -1,2 +1,4 @@
-# PeerFinder
-Tool to find common points between ASNs on PeeringDB
+# PeeringTools
+
+[![Build Status](https://travis-ci.org/rucarrol/PeeringTools.png)](https://travis-ci.org/rucarrol/PeeringTools)
+
