@@ -34,13 +34,13 @@ help_text = "Generate a table for common points in an IX. -h for help"
 parser = argparse.ArgumentParser(help_text)
 parser.add_argument('--myasn', help='My ASN', default='13414')
 parser.add_argument('--peerasn', help='Peer ASN', default='13414')
-parser.add_argument('--ix-only', dest='ix_only', help='Print IX results only', action='store_false')
-parser.add_argument('--private-only', dest='fac_only', help='Print private facility results only', action='store_false')
-args = parser.parse_args()
 
-if not args.ix_only and not args.fac_only:
-    print("Cant choose both --ix-only and --private-only, exiting")
-    exit(1)
+xgroup = parser.add_mutually_exclusive_group()
+xgroup.add_argument('--ix-only', dest='ix_only', help='Print IX results only', action='store_false', default=True)
+xgroup.add_argument('--private-only', dest='fac_only',
+                    help='Print private facility results only', action='store_false', default=True)
+
+args = parser.parse_args()
 
 results_mine = getPeeringDB(args.myasn)
 results_theirs = getPeeringDB(args.peerasn)
@@ -53,7 +53,7 @@ except IndexError:
     print("result: %s" % results_theirs)
     exit(1)
 
-if not args.ix_only:
+if args.ix_only:
 
     # Dump all our ix names into a list
     my_ix_list = getFac(results_mine, "netixlan_set")
@@ -78,7 +78,7 @@ if not args.ix_only:
     print(ix_tab.get_string(sortby="IX"))
 
 
-if not args.fac_only:
+if args.fac_only:
     # Dump all our ix names into a list
     my_priv_list = getFac(results_mine, "netfac_set")
     peer_priv_list = getFac(results_theirs, "netfac_set")
