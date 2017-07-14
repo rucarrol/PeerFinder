@@ -42,6 +42,7 @@ xgroup.add_argument('--private-only', dest='fac_only',
 
 args = parser.parse_args()
 
+
 results_mine = getPeeringDB(args.myasn)
 results_theirs = getPeeringDB(args.peerasn)
 
@@ -53,7 +54,7 @@ except IndexError:
     print("result: %s" % results_theirs)
     exit(1)
 
-if args.ix_only:
+if not args.ix_only:
 
     # Dump all our ix names into a list
     my_ix_list = getFac(results_mine, "netixlan_set")
@@ -61,7 +62,8 @@ if args.ix_only:
 
     # For all our IXs, see if they have the same IX
     common_ix_list = list(set(my_ix_list).intersection(peer_ix_list))
-    if len(common_ix_list) < 1:
+    
+    if len(common_ix_list) < 1 and not args.ix_only:
         print("Didnt find any common IX")
 
     ix_tab = PrettyTable(['IX', 'ASN', 'IPv4', 'IPv6'])
@@ -78,7 +80,7 @@ if args.ix_only:
     print(ix_tab.get_string(sortby="IX"))
 
 
-if args.fac_only:
+if not args.fac_only:
     # Dump all our ix names into a list
     my_priv_list = getFac(results_mine, "netfac_set")
     peer_priv_list = getFac(results_theirs, "netfac_set")
