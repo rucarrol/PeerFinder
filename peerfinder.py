@@ -39,7 +39,7 @@ def main():
         # For all our IXs, see if they have the same IX
         # Have to seed the common ix list with the first entry, otherwise the intersection of [] will always be []
 
-        common_ix_list = ixp[ixp.keys()[0]]
+        common_ix_list = ixp[list(ixp)[0]]
         for asn in ixp:
             common_ix_list = list(set(ixp[asn]).intersection(common_ix_list))
 
@@ -84,7 +84,7 @@ def main():
         # For all our IXs, see if they have the same IX
         # Have to seed the common ix list with the first entry, otherwise the intersection of [] will always be []
 
-        common_priv_list = priv[priv.keys()[0]]
+        common_priv_list = priv[list(priv)[0]]
         for asn in priv:
             common_priv_list = list(set(priv[asn]).intersection(common_priv_list))
 
