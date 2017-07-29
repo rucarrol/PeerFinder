@@ -11,7 +11,6 @@ import argparse
 import requests
 from prettytable import PrettyTable
 
-
 def main():
 
     args = getArgs()
@@ -123,6 +122,11 @@ def getArgs():
     xgroup.add_argument('--private-only', dest='fac_only', help='Print private facility results only', action='store_true')
 
     args = parser.parse_args()
+    ## FIXME: Values will only be true if they're set on CLI. We want default behaviour to be true/true, which cannot happen if we 
+    ## set neither of them. So, in this case if 
+    if args.ix_only == False and args.fac_only == False:
+        args.ix_only = True
+        args.fac_only = True
     ## Validate args here
     return args
 
