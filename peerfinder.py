@@ -155,6 +155,8 @@ def fetch_common_ixps(peers: List[Peer]) -> List[str]:
     common_ix = set([i.name for i in peers[0].peering_on])
     for peer in peers:
         common_ix = common_ix.intersection(set([i.name for i in peer.peering_on]))
+    import pprint as pp
+    pp.pprint(common_ix)
     return common_ix
 
 
@@ -203,9 +205,12 @@ def main():
             row = [ix]
             for peer in peers:
                 curr_ix = fetch_ix_from_ixps(ix, peer.peering_on)
-                v4 = " ".join([str(i) for i in curr_ix.subnet4])
-                v6 = " ".join([str(i) for i in curr_ix.subnet6])
-                line = f"v4: {v4}\nv6: {v6}"
+                v4 = "v4: " + "\n".join([str(i) for i in curr_ix.subnet4])
+                v6 = "v6: " + "\n".join(
+                    [str(i) for i in curr_ix.subnet6 if str(i) != "0100::"]
+                )
+                v6 = v6 if v6 != "v6: " else ""
+                line = f"{v4}\n{v6}"
                 row.append(line)
             ix_tab.add_row(row)
 
