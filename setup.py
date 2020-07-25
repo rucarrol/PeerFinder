@@ -7,7 +7,7 @@ with open("requirements.txt") as reqs:
     requirements = reqs.read().split("\n")
 
 setup(
-    name="PeerFinder",
+    name="peerfinder",
     version="2020.07.24",
     packages=["peerfinder"],
     url="https://github.com/rucarrol/PeerFinder",
