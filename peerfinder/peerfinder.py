@@ -261,12 +261,14 @@ def getArgs():
     )
 
     args = parser.parse_args()
-    ## FIXME: Values will only be true if they're set on CLI. We want default behaviour to be true/true, which cannot happen if we
-    ## set neither of them. So, in this case if
+    # TODO(rucarrol): Values will only be true if they're set on CLI. We want default behaviour to be true/true, which cannot happen if we set neither of them. So, in this case if
     if args.ix_only == False and args.fac_only == False:
         args.ix_only = True
         args.fac_only = True
-    ## Validate args here
+    # Validate args here
+    if not args.asn:
+        print("--asn must be specified!")
+        exit(1)
     return args
 
 
