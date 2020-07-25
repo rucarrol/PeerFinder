@@ -155,8 +155,6 @@ def fetch_common_ixps(peers: List[Peer]) -> List[str]:
     common_ix = set([i.name for i in peers[0].peering_on])
     for peer in peers:
         common_ix = common_ix.intersection(set([i.name for i in peer.peering_on]))
-    import pprint as pp
-    pp.pprint(common_ix)
     return common_ix
 
 
