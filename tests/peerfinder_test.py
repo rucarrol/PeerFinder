@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 import mock
-import peerfinder
+import peerfinder.peerfinder as peerfinder
 import requests
 from ipaddress import IPv6Address, IPv4Address
 
