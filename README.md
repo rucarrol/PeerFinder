@@ -1,8 +1,25 @@
-# PeeringTools
+# peerfinder
 
 [![Build Status](https://travis-ci.org/rucarrol/PeerFinder.png)](https://travis-ci.org/rucarrol/PeerFinder)
 
-## Intro
+## Installation
+
+peerfinder can be installed via PIP:
+
+```
+$ pip3 search peerfinder
+peerfinder (2020.7.25)  - A tool to find common IX points as per PeeringDB
+```
+Failing that, you an build from source and install locally:
+```
+git clone https://github.com/rucarrol/PeerFinder.git
+cd PeerFinder
+python3 setup.py sdist bdist_wheel
+pip install ./dist/peerfinder*.whl
+```
+
+
+## Usage
 
 PeerFinder is a python3.7 and beyond script which finds common points of presence between ASNs as reported by [PeeringDB](peeringdb.com). 
 
@@ -71,10 +88,6 @@ Fetching PeeringDB info for 13414
 ```
 
 
-## Bugs
+## Bugs, Features 
 
-Probably many. PRs or bug reports very welcome. 
-
-## Feature requests 
-
-TODO: Make installable via pip
+Please open a PR!

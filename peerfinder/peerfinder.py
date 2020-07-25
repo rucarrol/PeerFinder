@@ -155,8 +155,6 @@ def fetch_common_ixps(peers: List[Peer]) -> List[str]:
     common_ix = set([i.name for i in peers[0].peering_on])
     for peer in peers:
         common_ix = common_ix.intersection(set([i.name for i in peer.peering_on]))
-    import pprint as pp
-    pp.pprint(common_ix)
     return common_ix
 
 
@@ -261,12 +259,14 @@ def getArgs():
     )
 
     args = parser.parse_args()
-    ## FIXME: Values will only be true if they're set on CLI. We want default behaviour to be true/true, which cannot happen if we
-    ## set neither of them. So, in this case if
+    # TODO(rucarrol): Values will only be true if they're set on CLI. We want default behaviour to be true/true, which cannot happen if we set neither of them. So, in this case if
     if args.ix_only == False and args.fac_only == False:
         args.ix_only = True
         args.fac_only = True
-    ## Validate args here
+    # Validate args here
+    if not args.asn:
+        print("--asn must be specified!")
+        exit(1)
     return args
 
 
