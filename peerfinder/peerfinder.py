@@ -191,6 +191,14 @@ def get_peers(args: Dict) -> Dict:
     return(peers)
 
 def find_common_points(common_ix_list: List, common_fac_list: List, peers: List) -> Dict:
+    """ Return a dict with all common IXs and facilities
+    Arguments:
+        common_ix_list: A list of all common ixs
+        common_fac_list: A list of all common facilities
+        peers: A list of the involved peers
+    Returns:
+        A dict with the merged IXs and facilites
+    """
     common_points = {}
     common_ixs = {}
     common_facs = {}
@@ -226,6 +234,12 @@ def find_common_points(common_ix_list: List, common_fac_list: List, peers: List)
     return(common_points)
 
 def human_readable_print(common_points: Dict, peers: List):
+    """ Return always 0
+    Arguments:
+        common_points: A dict containing all common facilites and IXs
+    Returns:
+        Always zero
+    """
 
     header = []
     header.append("IX")
@@ -272,6 +286,8 @@ def human_readable_print(common_points: Dict, peers: List):
     ix_tab.hrules = 1
     
     print(ix_tab.get_string(sortby="Facility"))
+
+    return 0
 
 
 def main():
