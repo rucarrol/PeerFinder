@@ -264,7 +264,7 @@ def human_readable_print(common_points: Dict, peers: List):
         ix_tab.add_row(row)
 
         ix_tab.hrules = 1
-        print(ix_tab.get_string(sortby="IX"))
+    print(ix_tab.get_string(sortby="IX"))
 
     header = []
     header.append("Facility")
