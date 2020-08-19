@@ -9,7 +9,7 @@
 import argparse
 import requests
 from prettytable import PrettyTable
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from ipaddress import IPv4Address, IPv6Address
 from typing import List, Dict
 
@@ -172,10 +172,13 @@ def fetch_common_facilities(facilities: List[Facility]) -> List[str]:
         common_fac = common_fac.intersection(set([i.name for i in fac.present_in]))
     return common_fac
 
-
-def main():
-
-    args = getArgs()
+def get_peers(args: Dict) -> Dict:
+    """ Return a dict with peers
+    Arguments:
+        args: A dict containing all peers and extra arguments
+    Returns:
+        A list of peers and facilities
+    """
     pdata = dict()
     peers = list()
     [pdata.update({i: getPeeringDB(i)}) for i in args.asn]
@@ -185,60 +188,116 @@ def main():
         ix_set = [pdb_to_ixp(ix) for _, ix in ix_dedup.items()]
         netfac_set = [pdb_to_fac(ix) for ix in pdb["data"][0]["netfac_set"]]
         peers.append(pdb_to_peer(pdb["data"][0], ix_set, netfac_set))
+    return(peers)
 
-    if args.ix_only:
-        common_ix_list = fetch_common_ixps(peers)
-        if len(common_ix_list) < 1:
-            print("Didnt find any common IX, exiting...")
-            exit(1)
-        header = []
-        header.append("IX")
+def find_common_points(common_ix_list: List, common_fac_list: List, peers: List) -> Dict:
+    common_points = {}
+    common_ixs = {}
+    common_facs = {}
+    for ix in common_ix_list:
         for peer in peers:
-            header.append(peer.name)
-
-        ix_tab = PrettyTable(header)
-        ix_tab.print_empty = False
-
-        for ix in common_ix_list:
-            row = [ix]
-            for peer in peers:
-                curr_ix = fetch_ix_from_ixps(ix, peer.peering_on)
-                v4 = "v4: " + "\n".join([str(i) for i in curr_ix.subnet4])
-                v6 = "v6: " + "\n".join(
-                    [str(i) for i in curr_ix.subnet6 if str(i) != "0100::"]
+            curr_ix = asdict(fetch_ix_from_ixps(ix, peer.peering_on))
+            if curr_ix['name'] not in common_ixs:
+                common_ixs.update({curr_ix['name']: {}})
+            
+            common_ixs[curr_ix['name']].update(
+                    {
+                        asdict(peer)['ASN']:
+                        {
+                            "name": asdict(peer)['name'],
+                            "IPv4": [IPv4Address(i) for i in curr_ix["subnet4"]], 
+                            "IPv6": [IPv6Address(i) for i in curr_ix["subnet6"]]
+                        }
+                    }
+                
                 )
-                v6 = v6 if v6 != "v6: " else ""
-                line = f"{v4}\n{v6}"
-                row.append(line)
-            ix_tab.add_row(row)
+    for fac in common_fac_list:
+        for peer in peers:
+            curr_fac = asdict(fetch_fac_from_facilities(fac, peer.present_in))
+            if curr_fac['name'] not in common_facs:
+                common_facs.update({curr_fac['name']: {}})
+            common_facs[curr_fac['name']].update({
+                asdict(peer)['name']: asdict(peer)['ASN']
+            })
+    common_points.update({
+            "IXs": common_ixs,
+            "FACs": common_facs
+    })
+    return(common_points)
+
+def human_readable_print(common_points: Dict, peers: List):
+
+    header = []
+    header.append("IX")
+
+    for peer in peers:
+        header.append(peer.name)
+    
+    ix_tab = PrettyTable(header)
+    ix_tab.print_empty = False
+
+    for ix in common_points['IXs']:
+        row = [ix]
+        for peer in peers:
+            
+            v4 = "v4: " + "\n".join([str(i) for i in common_points['IXs'][ix][asdict(peer)['ASN']]['IPv4']])
+            v6 = "v6: " + "\n".join(
+                [str(i) for i in common_points['IXs'][ix][asdict(peer)['ASN']]['IPv6'] if str(i) != "0100::"]
+            )
+            v6 = v6 if v6 != "v6: " else ""
+            line = f"{v4}\n{v6}"
+            row.append(line)
+        ix_tab.add_row(row)
 
         ix_tab.hrules = 1
         print(ix_tab.get_string(sortby="IX"))
 
-    if args.fac_only:
+    header = []
+    header.append("Facility")
+    for peer in peers:
+        header.append(peer.name)
+
+    ix_tab = PrettyTable(header)
+    ix_tab.print_empty = False
+
+    for fac in common_points['FACs']:
+        row = [fac]
+        
+        for peer in peers:
+            curr_fac = common_points['FACs'][fac][asdict(peer)['name']]
+            line = f"ASN: {curr_fac}"
+            row.append(line)
+        ix_tab.add_row(row)
+
+    ix_tab.hrules = 1
+    
+    print(ix_tab.get_string(sortby="Facility"))
+
+
+def main():
+
+    args = getArgs()
+    peers = get_peers(args)
+
+    if args.ix_only and args.fac_only:
+        common_ix_list = fetch_common_ixps(peers)
+        common_fac_list = fetch_common_facilities(peers)
+        human_readable_print(find_common_points(common_ix_list,common_fac_list, peers), peers)
+        find_common_points(common_ix_list,common_fac_list, peers)
+    elif args.ix_only:
+        common_ix_list = fetch_common_ixps(peers)
+        if len(common_ix_list) < 1:
+            print("Didnt find any common IX, exiting...")
+            exit(1)
+        human_readable_print(common_ix_list, [], peers)
+
+    elif args.fac_only:
         common_fac_list = fetch_common_facilities(peers)
         if len(common_fac_list) < 1:
             print("Didnt find any common Facility, exiting...")
             exit(1)
-        header = []
-        header.append("Facility")
-        for peer in peers:
-            header.append(peer.name)
-
-        ix_tab = PrettyTable(header)
-        ix_tab.print_empty = False
-
-        for fac in common_fac_list:
-            row = [fac]
-            for peer in peers:
-                curr_fac = fetch_fac_from_facilities(fac, peer.present_in)
-                line = f"ASN: {curr_fac.ASN}"
-                row.append(line)
-            ix_tab.add_row(row)
-
-        ix_tab.hrules = 1
-        print(ix_tab.get_string(sortby="Facility"))
-
+        human_readable_print([],common_fac_list, peers)
+        
     exit(0)
 
 
