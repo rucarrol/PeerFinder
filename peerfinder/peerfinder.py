@@ -283,20 +283,19 @@ def main():
         common_ix_list = fetch_common_ixps(peers)
         common_fac_list = fetch_common_facilities(peers)
         human_readable_print(find_common_points(common_ix_list,common_fac_list, peers), peers)
-        find_common_points(common_ix_list,common_fac_list, peers)
     elif args.ix_only:
         common_ix_list = fetch_common_ixps(peers)
         if len(common_ix_list) < 1:
             print("Didnt find any common IX, exiting...")
             exit(1)
-        human_readable_print(common_ix_list, [], peers)
+        human_readable_print(find_common_points(common_ix_list,[], peers), peers)
 
     elif args.fac_only:
         common_fac_list = fetch_common_facilities(peers)
         if len(common_fac_list) < 1:
             print("Didnt find any common Facility, exiting...")
             exit(1)
-        human_readable_print([],common_fac_list, peers)
+        human_readable_print(find_common_points([],common_fac_list, peers), peers)
         
     exit(0)
 
