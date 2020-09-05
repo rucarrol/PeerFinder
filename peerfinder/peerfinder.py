@@ -325,15 +325,16 @@ def getArgs():
     parser = argparse.ArgumentParser(help_text)
     parser.add_argument("--asn", nargs="+", dest="asn", help="List of ASNs")
     parser.add_argument(
-        "--missing", action="store_true", dest="missing", help="Print missing IXs"
+        "--missing", action="store_true", dest="missing", help="Print missing IXs", default=False,
     )
     parser.add_argument(
-        "--ix-only", dest="ix_only", help="Print IX results only", action="store_true"
+        "--ix", dest="ix_only", help="Print IX results", action="store_true", default=False,
     )
     parser.add_argument(
-        "--private-only",
+        "--private",
         dest="fac_only",
-        help="Print private facility results only",
+        help="Print private facility results",
+        default=False,
         action="store_true",
     )
     args = parser.parse_args()
@@ -341,6 +342,10 @@ def getArgs():
     if not args.asn:
         print("--asn must be specified!")
         exit(1)
+    if not any([args.ix_only, args.fac_only, args.missing]):
+        print("Must specify --ix, --private or --missing!")
+        exit(1)
+
     return args
 
 
