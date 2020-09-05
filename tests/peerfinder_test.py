@@ -43,6 +43,7 @@ class testPeerFinder(unittest.TestCase):
             name="Test IX",
             subnet4=[IPv4Address("192.0.2.1")],
             subnet6=[IPv6Address("0100::")],
+            speed=1000,
         )
         self.assertEqual(expected, peerfinder.pdb_to_ixp(self.netixlan_set))
 
@@ -64,6 +65,7 @@ class testPeerFinder(unittest.TestCase):
                 "ipaddr4": [["192.0.2.1"], ["192.0.2.1"]],
                 "ipaddr6": [["0100::"], ["0100::"]],
                 "name": "Test IX",
+                "speed": 2000,
             }
         }
         self.assertEqual(
@@ -95,7 +97,7 @@ class testPeerFinder(unittest.TestCase):
         self.assertEqual(expected, peerfinder.fetch_common_facilities(peer))
 
     @mock.patch.object(requests, "get", autospec=True)
-    def test_getPeeringDB(self, requests_mock):
+    def test_getPeeringDBSuccess(self, requests_mock):
         r_mock = Mock()
         r_mock.status_code = 200
         r_mock.text = "some text"
@@ -103,6 +105,77 @@ class testPeerFinder(unittest.TestCase):
         requests_mock.return_value = r_mock
         expected = {"data": [0]}
         self.assertEqual(expected, peerfinder.getPeeringDB("23456"))
+
+    def test_fetch_fac_from_facilities(self):
+        fac = [peerfinder.pdb_to_fac(self.netfac_set)]
+        fac_name = "Test Facility"
+        expected = peerfinder.Facility(name="Test Facility", ASN=65536)
+        self.assertEqual(expected, peerfinder.fetch_fac_from_facilities(fac_name, fac))
+
+    def test_fetch_different_ixps(self):
+        ix1 = peerfinder.IXP(
+            name="Test IX1",
+            subnet4=[IPv4Address("192.0.2.1")],
+            subnet6=[IPv6Address("0100::")],
+            speed=1000,
+        )
+        ix2 = peerfinder.IXP(
+            name="Test IX2",
+            subnet4=[IPv4Address("192.0.2.2")],
+            subnet6=[IPv6Address("0100::")],
+            speed=1000,
+        )
+        expected = ["Test IX1", "Test IX2"]
+        peer1 = peerfinder.Peer(name="peer1", ASN=1, present_in=[], peering_on=[ix1])
+        peer2 = peerfinder.Peer(name="peer2", ASN=1, present_in=[], peering_on=[ix2])
+        self.assertEqual(expected, peerfinder.fetch_different_ixps([peer1, peer2]))
+
+    def test_print_ixp(self):
+        ix1 = peerfinder.IXP(
+            name="Test IX1",
+            subnet4=[IPv4Address("192.0.2.1")],
+            subnet6=[IPv6Address("0100::")],
+            speed=1000,
+        )
+        ix2 = peerfinder.IXP(
+            name="Test IX2",
+            subnet4=[IPv4Address("192.0.2.2")],
+            subnet6=[IPv6Address("0100::")],
+            speed=1000,
+        )
+        peer1 = peerfinder.Peer(name="peer1", ASN=1, present_in=[], peering_on=[ix1])
+        peer2 = peerfinder.Peer(
+            name="peer2", ASN=1, present_in=[], peering_on=[ix1, ix2]
+        )
+        self.assertIsNone(peerfinder.print_ixp([peer1, peer2]))
+
+    def test_print_fac(self):
+        fac1 = peerfinder.Facility(name="Test Facility 1", ASN=1,)
+        fac2 = peerfinder.Facility(name="Test Facility 2", ASN=1,)
+        peer1 = peerfinder.Peer(
+            name="peer1", ASN=1, present_in=[fac1, fac2], peering_on=[]
+        )
+        peer2 = peerfinder.Peer(name="peer2", ASN=1, present_in=[fac1], peering_on=[])
+        self.assertIsNone(peerfinder.print_fac([peer1, peer2]))
+
+    def test_print_uncommon(self):
+        ix1 = peerfinder.IXP(
+            name="Test IX1",
+            subnet4=[IPv4Address("192.0.2.1")],
+            subnet6=[IPv6Address("0100::")],
+            speed=1000,
+        )
+        ix2 = peerfinder.IXP(
+            name="Test IX2",
+            subnet4=[IPv4Address("192.0.2.2")],
+            subnet6=[IPv6Address("0100::")],
+            speed=1000,
+        )
+        peer1 = peerfinder.Peer(name="peer1", ASN=1, present_in=[], peering_on=[ix1])
+        peer2 = peerfinder.Peer(
+            name="peer2", ASN=1, present_in=[], peering_on=[ix1, ix2]
+        )
+        self.assertIsNone(peerfinder.print_uncommon([peer1, peer2]))
 
 
 if __name__ == "__main__":
