@@ -8,13 +8,13 @@ with open("requirements.txt") as reqs:
 
 setup(
     name="peerfinder",
-    version="2020.07.24",
+    version="2020.09.05",
     packages=["peerfinder"],
     url="https://github.com/rucarrol/PeerFinder",
     license="MIT",
     author="Ruairi Carroll",
     author_email="ruairi.carroll@gmail.com",
-    description="A tool to find common IX points as per PeeringDB",
+    description="A tool to find common IX points on PeeringDB",
     long_description=readme,
     long_description_content_type="text/markdown",
     install_requires=requirements,
