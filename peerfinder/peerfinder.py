@@ -364,7 +364,7 @@ def getPeeringDB(ASN: str) -> Dict:
     r = requests.get(pdb_url)
     if r.status_code != requests.status_codes.codes.ALL_OK:
         print("Got unexpected status code, exiting")
-        print("%s - %s" % (r.status, r.text))
+        print("%s - %s" % (r.status_code, r.text))
         exit(1)
     if len(r.json()["data"]) != 1:
         print(
