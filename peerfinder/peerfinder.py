@@ -98,7 +98,7 @@ def pdb_to_ixp(netixlan_set: Dict) -> IXP:
     return IXP(
         name=netixlan_set["name"],
         speed=netixlan_set["speed"],
-        subnet4=[IPv4Address(i) for i in netixlan_set["ipaddr4"]],
+        subnet4=[IPv4Address(i) if i else "0.0.0.0" for i in netixlan_set["ipaddr4"]],
         subnet6=[IPv6Address(i) if i else "0100::" for i in netixlan_set["ipaddr6"]],
     )
 
@@ -251,7 +251,9 @@ def print_ixp(peers: List[Peer]) -> None:
         row = [ix]
         for peer in peers:
             curr_ix = fetch_ix_from_ixps(ix, peer.peering_on)
-            v4 = "v4: " + "\n".join([str(i) for i in curr_ix.subnet4])
+            v4 = "v4: " + "\n".join(
+                [str(i) for i in curr_ix.subnet4 if str(i) != "0.0.0.0"]
+            )
             v6 = "v6: " + "\n".join(
                 [str(i) for i in curr_ix.subnet6 if str(i) != "0100::"]
             )
