@@ -8,6 +8,7 @@
 
 import argparse
 import requests
+import os
 from prettytable import PrettyTable
 from dataclasses import dataclass
 from ipaddress import IPv4Address, IPv6Address
@@ -73,13 +74,16 @@ def main():
     args = getArgs()
     pdata = dict()
     peers = list()
-    [pdata.update({i: getPeeringDB(i)}) for i in args.asn]
+
+    pdb_json_result = getPeeringDB(args.asn)
+    for i in range(0, len(args.asn)):
+        pdata.update({i: pdb_json_result[i]})
 
     for asn, pdb in pdata.items():
-        ix_dedup = _dedup_ixs(pdb["data"][0]["netixlan_set"])
+        ix_dedup = _dedup_ixs(pdb["netixlan_set"])
         ix_set = [pdb_to_ixp(ix) for _, ix in ix_dedup.items()]
-        netfac_set = [pdb_to_fac(ix) for ix in pdb["data"][0]["netfac_set"]]
-        peers.append(pdb_to_peer(pdb["data"][0], ix_set, netfac_set))
+        netfac_set = [pdb_to_fac(ix) for ix in pdb["netfac_set"]]
+        peers.append(pdb_to_peer(pdb, ix_set, netfac_set))
 
     if args.ix_only:
         print_ixp(peers)
@@ -349,7 +353,7 @@ def getArgs():
     return args
 
 
-def getPeeringDB(ASN: str) -> Dict:
+def getPeeringDB(ASNs: List) -> Dict:
     """Function to connect to peeringDB and fetch results for a given ASN
 
     Args:
@@ -359,19 +363,39 @@ def getPeeringDB(ASN: str) -> Dict:
         r.json: a dict containing the results from PeeringDB
 
     """
-    pdb_url = f"https://www.peeringdb.com/api/net?asn__in={ASN}&depth=2"
-    print(f"Fetching PeeringDB info for {ASN}")
-    r = requests.get(pdb_url)
+    PEERING_DB_API_KEY_WELL_KNOWN_FILES = (
+        "~/.peerfinder/peeringdb_api.key",
+        "~/.peeringdb_api.key"
+    )
+    ASNsStr = ",".join(ASNs)
+    headers = {}
+    peeringdb_api_key = None
+
+    for well_known_file in PEERING_DB_API_KEY_WELL_KNOWN_FILES:
+        path = os.path.expanduser(well_known_file)
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                peeringdb_api_key = f.read().strip()
+                break
+
+    if peeringdb_api_key:
+        headers["Authorization"] = "Api-Key {}".format(peeringdb_api_key)
+
+    headers["User-Agent"] = "PeerFinder"
+
+    pdb_url = f"https://www.peeringdb.com/api/net?asn__in={ASNsStr}&depth=2"
+    print(f"Fetching PeeringDB info for {ASNsStr}")
+    r = requests.get(pdb_url, headers=headers)
     if r.status_code != requests.status_codes.codes.ALL_OK:
         print("Got unexpected status code, exiting")
         print("%s - %s" % (r.status_code, r.text))
         exit(1)
-    if len(r.json()["data"]) != 1:
+    if len(r.json()["data"]) != len(ASNs):
         print(
-            f"Got unexpected number of replies for {ASN}(Does ASN exist in PeeringDB?). Exiting"
+            f"Got unexpected number of replies for {ASNsStr} (Do they all exist in PeeringDB?). Exiting"
         )
         exit(1)
-    return r.json()
+    return r.json()["data"]
 
 
 if __name__ == "__main__":
