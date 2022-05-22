@@ -359,7 +359,7 @@ def getPeeringDB(ASN: str) -> Dict:
         r.json: a dict containing the results from PeeringDB
 
     """
-    pdb_url = f"https://api.peeringdb.com/api/net?asn__in={ASN}&depth=2"
+    pdb_url = f"https://www.peeringdb.com/api/net?asn__in={ASN}&depth=2"
     print(f"Fetching PeeringDB info for {ASN}")
     r = requests.get(pdb_url)
     if r.status_code != requests.status_codes.codes.ALL_OK:
