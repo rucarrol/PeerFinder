@@ -18,6 +18,15 @@ python3 setup.py sdist bdist_wheel
 pip install ./dist/peerfinder*.whl
 ```
 
+## PeeringDB API Key
+
+It is recommended that you configure a PeeringDB API key to mitigate the
+effect of PeeringDB's throttling of anonymous requests.	Details on how to
+obtain an API key can be found at [https://docs.peeringdb.com/howto/api_keys/](https://docs.peeringdb.com/howto/api_keys/). Store
+a key	at one of the following well-known paths:
+``~/.peerfinder/peeringdb_api.key``, ``~/.peeringdb_api.key``. Be sure to
+keep your key private by setting permissions to	user-only access, such as with `chmod 0600`.
+
 
 ## Usage
 
